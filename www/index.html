@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cherif Send</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f6fa;
+      text-align: center;
+    }
+
+    header {
+      background: #1769e0;
+      color: white;
+      padding: 30px 15px;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .logo {
+      font-size: 55px;
+    }
+
+    h1 {
+      margin: 8px 0;
+      font-size: 30px;
+    }
+
+    .container {
+      padding: 25px 18px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      margin: 20px auto;
+      max-width: 450px;
+      border-radius: 22px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.08);
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      border: 0;
+      border-radius: 15px;
+      background: #1769e0;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      margin: 15px 0;
+      padding: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">📲</div>
+  <h1>Cherif Send</h1>
+  <p>Transfert rapide de fichiers</p>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>📤 Envoyer</h2>
+    <p>Choisis un fichier à envoyer.</p>
+
+    <input type="file" id="file">
+
+    <button onclick="sendFile()">
+      Envoyer
+    </button>
+
+    <p id="status"></p>
+  </div>
+
+  <div class="card">
+    <h2>📥 Recevoir</h2>
+    <p>Connecte un autre téléphone au même réseau pour transférer des fichiers.</p>
+  </div>
+
+</div>
+
+<script>
+function sendFile() {
+  const file = document.getElementById("file").files[0];
+  const status = document.getElementById("status");
+
+  if (!file) {
+    status.textContent = "Choisis d'abord un fichier.";
+    return;
+  }
+
+  status.textContent = "Fichier sélectionné : " + file.name;
+}
+</script>
+
+</body>
+</html>

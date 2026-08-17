@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cherif Send</string>
+    <string name="title_activity_main">Cherif Send</string>
+    <string name="package_name">com.cherif.send</string>
+    <string name="custom_url_scheme">com.cherif.send</string>
+</resources>
