@@ -20,14 +20,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Donner les permissions à Gradle
-        run: chmod +x android/gradlew
-
-      - name: Compiler l'APK
+      - name: Compiler Cherif Send
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-      - name: Récupérer l'APK
+      - name: Publier l'APK
         uses: actions/upload-artifact@v4
         with:
           name: Cherif-Send-APK
