@@ -20,6 +20,11 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      -       - name: Préparer Capacitor Android
+        run: |
+          npm ci
+          npx cap sync android
+
       - name: Compiler Cherif Send
         working-directory: android
         run: |
