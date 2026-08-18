@@ -1,0 +1,34 @@
+name: Build Cherif Send APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Télécharger le projet
+        uses: actions/checkout@v4
+
+      - name: Installer Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Donner les permissions à Gradle
+        run: chmod +x android/gradlew
+
+      - name: Compiler l'APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Récupérer l'APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cherif-Send-APK
+          path: android/app/build/outputs/apk/debug/*.apk
