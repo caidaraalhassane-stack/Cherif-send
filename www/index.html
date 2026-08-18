@@ -13,54 +13,165 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f3f6fa;
-      text-align: center;
+      background: #f4f7fb;
+      color: #172033;
     }
 
     header {
-      background: #1769e0;
+      background: linear-gradient(135deg, #1769e0, #0d47a1);
       color: white;
-      padding: 30px 15px;
+      padding: 35px 20px 30px;
+      text-align: center;
       border-radius: 0 0 30px 30px;
     }
 
     .logo {
-      font-size: 55px;
+      font-size: 58px;
     }
 
-    h1 {
-      margin: 8px 0;
-      font-size: 30px;
+    header h1 {
+      margin: 5px 0;
+      font-size: 32px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      opacity: .9;
     }
 
     .container {
-      padding: 25px 18px;
+      padding: 22px 16px 90px;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .welcome {
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.07);
+    }
+
+    .welcome h2 {
+      margin-top: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
     }
 
     .card {
       background: white;
-      padding: 25px;
-      margin: 20px auto;
-      max-width: 450px;
       border-radius: 22px;
-      box-shadow: 0 5px 20px rgba(0,0,0,.08);
+      padding: 22px 15px;
+      text-align: center;
+      box-shadow: 0 5px 18px rgba(0,0,0,.07);
+      cursor: pointer;
+      transition: transform .15s;
+    }
+
+    .card:active {
+      transform: scale(.96);
+    }
+
+    .icon {
+      font-size: 45px;
+      margin-bottom: 10px;
+    }
+
+    .card h3 {
+      margin: 5px 0;
+      font-size: 19px;
+    }
+
+    .card p {
+      font-size: 13px;
+      color: #687386;
+      margin-bottom: 0;
+    }
+
+    .section {
+      display: none;
+      background: white;
+      padding: 22px;
+      margin-top: 20px;
+      border-radius: 22px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.07);
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      margin: 15px 0;
+      border: 1px solid #ddd;
+      border-radius: 12px;
     }
 
     button {
       width: 100%;
-      padding: 16px;
+      padding: 15px;
       border: 0;
-      border-radius: 15px;
+      border-radius: 14px;
       background: #1769e0;
       color: white;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: bold;
+      margin-top: 8px;
     }
 
-    input {
-      width: 100%;
-      margin: 15px 0;
+    .back {
+      background: #eef2f7;
+      color: #172033;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #1769e0;
+    }
+
+    .history-item {
       padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    .empty {
+      color: #687386;
+      text-align: center;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 5px;
+      box-shadow: 0 -3px 15px rgba(0,0,0,.1);
+    }
+
+    nav button {
+      background: transparent;
+      color: #1769e0;
+      margin: 0;
+      padding: 8px 3px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 350px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -75,9 +186,41 @@
 
 <div class="container">
 
-  <div class="card">
-    <h2>📤 Envoyer</h2>
-    <p>Choisis un fichier à envoyer.</p>
+  <div class="welcome">
+    <h2>Bienvenue 👋</h2>
+    <p>Choisis une action pour commencer.</p>
+  </div>
+
+  <div class="grid">
+
+    <div class="card" onclick="showSection('send')">
+      <div class="icon">📤</div>
+      <h3>Envoyer</h3>
+      <p>Envoyer un fichier</p>
+    </div>
+
+    <div class="card" onclick="showSection('receive')">
+      <div class="icon">📥</div>
+      <h3>Recevoir</h3>
+      <p>Recevoir un fichier</p>
+    </div>
+
+    <div class="card" onclick="showSection('files')">
+      <div class="icon">📁</div>
+      <h3>Fichiers</h3>
+      <p>Choisir tes fichiers</p>
+    </div>
+
+    <div class="card" onclick="showSection('history')">
+      <div class="icon">📋</div>
+      <h3>Historique</h3>
+      <p>Voir les transferts</p>
+    </div>
+
+  </div>
+
+  <div id="send" class="section">
+    <h2>📤 Envoyer un fichier</h2>
 
     <input type="file" id="file">
 
@@ -86,27 +229,143 @@
     </button>
 
     <p id="status"></p>
+
+    <button class="back" onclick="hideSections()">
+      ← Retour
+    </button>
   </div>
 
-  <div class="card">
+  <div id="receive" class="section">
     <h2>📥 Recevoir</h2>
-    <p>Connecte un autre téléphone au même réseau pour transférer des fichiers.</p>
+
+    <p>
+      La réception de fichiers sera disponible ici.
+    </p>
+
+    <button onclick="showMessage('Recherche d’un appareil...')">
+      🔎 Rechercher un appareil
+    </button>
+
+    <p id="receiveStatus"></p>
+
+    <button class="back" onclick="hideSections()">
+      ← Retour
+    </button>
+  </div>
+
+  <div id="files" class="section">
+    <h2>📁 Mes fichiers</h2>
+
+    <input type="file" id="multipleFiles" multiple>
+
+    <p id="fileStatus" class="empty">
+      Aucun fichier sélectionné.
+    </p>
+
+    <button onclick="showFiles()">
+      Afficher les fichiers
+    </button>
+
+    <button class="back" onclick="hideSections()">
+      ← Retour
+    </button>
+  </div>
+
+  <div id="history" class="section">
+    <h2>📋 Historique</h2>
+
+    <div id="historyList">
+      <p class="empty">
+        Aucun transfert pour le moment.
+      </p>
+    </div>
+
+    <button class="back" onclick="hideSections()">
+      ← Retour
+    </button>
   </div>
 
 </div>
 
-<script>
-function sendFile() {
-  const file = document.getElementById("file").files[0];
-  const status = document.getElementById("status");
+<nav>
+  <button onclick="hideSections()">🏠 Accueil</button>
+  <button onclick="showSection('send')">📤 Envoyer</button>
+  <button onclick="showSection('receive')">📥 Recevoir</button>
+  <button onclick="showSection('history')">📋 Historique</button>
+</nav>
 
-  if (!file) {
-    status.textContent = "Choisis d'abord un fichier.";
-    return;
+<script>
+  function hideSections() {
+    document.querySelectorAll(".section").forEach(section => {
+      section.classList.remove("active");
+    });
   }
 
-  status.textContent = "Fichier sélectionné : " + file.name;
-}
+  function showSection(id) {
+    hideSections();
+
+    const section = document.getElementById(id);
+
+    if (section) {
+      section.classList.add("active");
+      section.scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+  }
+
+  function sendFile() {
+    const fileInput = document.getElementById("file");
+    const status = document.getElementById("status");
+
+    if (!fileInput.files.length) {
+      status.textContent = "⚠️ Choisis d'abord un fichier.";
+      return;
+    }
+
+    const file = fileInput.files[0];
+
+    status.textContent =
+      "✅ Fichier sélectionné : " + file.name;
+
+    addHistory(
+      "📤 " + file.name
+    );
+  }
+
+  function showFiles() {
+    const input = document.getElementById("multipleFiles");
+    const status = document.getElementById("fileStatus");
+
+    if (!input.files.length) {
+      status.textContent = "Aucun fichier sélectionné.";
+      return;
+    }
+
+    status.innerHTML =
+      "📁 " + input.files.length +
+      " fichier(s) sélectionné(s).";
+  }
+
+  function showMessage(message) {
+    document.getElementById("receiveStatus").textContent =
+      "🔵 " + message;
+  }
+
+  function addHistory(text) {
+    const history = document.getElementById("historyList");
+
+    if (history.querySelector(".empty")) {
+      history.innerHTML = "";
+    }
+
+    const item = document.createElement("div");
+
+    item.className = "history-item";
+    item.textContent = text;
+
+    history.prepend(item);
+  }
 </script>
 
 </body>
