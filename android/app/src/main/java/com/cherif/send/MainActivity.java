@@ -1,5 +1,15 @@
 package com.cherif.send;
 
-import com.getcapacitor.BridgeActivity;
+import android.os.Bundle;
 
-public class MainActivity extends BridgeActivity {}
+import com.getcapacitor.BridgeActivity;
+import com.cherif.send.transfer.LocalTransferPlugin;
+
+public class MainActivity extends BridgeActivity {
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(LocalTransferPlugin.class);
+        super.onCreate(savedInstanceState);
+    }
+}
