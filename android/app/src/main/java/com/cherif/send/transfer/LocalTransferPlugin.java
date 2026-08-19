@@ -83,8 +83,6 @@ public class LocalTransferPlugin extends Plugin {
             BufferedInputStream input =
                     new BufferedInputStream(socket.getInputStream());
 
-            byte[] buffer = new byte[8192];
-
             String header = readHeader(input);
 
             if (header == null || !header.startsWith("CHERIF-SEND")) {
@@ -92,102 +90,48 @@ public class LocalTransferPlugin extends Plugin {
                 return;
             }
 
-            File directory =
-                    getContext().getExternalFilesDir(null);
+            String[] parts = header.split("\\|");
+
+            String fileName = "received_file";
+            long fileSize = -1;
+
+            if (parts.length >= 2 && !parts[1].isEmpty()) {
+                fileName = new File(parts[1]).getName();
+            }
+
+            if (parts.length >= 3) {
+                try {
+                    fileSize = Long.parseLong(parts[2]);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
+            File directory = getContext().getExternalFilesDir(null);
 
             if (directory == null) {
                 socket.close();
                 return;
             }
 
-            File file = new File(directory, "received_file");
+            File file = new File(directory, fileName);
 
             output = new FileOutputStream(file);
 
+            byte[] buffer = new byte[8192];
+            long received = 0;
             int count;
 
             while ((count = input.read(buffer)) != -1) {
                 output.write(buffer, 0, count);
+                received += count;
+
+                if (fileSize > 0 && received >= fileSize) {
+                    break;
+                }
             }
 
             output.flush();
             output.close();
             socket.close();
 
-        } catch (Exception ignored) {
-            try {
-                if (output != null) {
-                    output.close();
-                }
-            } catch (Exception ignoredAgain) {
-            }
-        }
-    }
-
-    private String readHeader(BufferedInputStream input)
-            throws IOException {
-
-        StringBuilder header = new StringBuilder();
-
-        int value;
-
-        while ((value = input.read()) != -1) {
-            if (value == '\n') {
-                break;
-            }
-
-            header.append((char) value);
-
-            if (header.length() > 256) {
-                break;
-            }
-        }
-
-        return header.toString();
-    }
-
-    @PluginMethod
-    public void stopReceiver(PluginCall call) {
-        try {
-            if (serverSocket != null) {
-                serverSocket.close();
-                serverSocket = null;
-            }
-
-            serverThread = null;
-            call.resolve();
-
-        } catch (IOException e) {
-            call.reject("Impossible d'arrêter le récepteur.", e);
-        }
-    }
-
-    private String findLocalAddress() throws Exception {
-        Enumeration<NetworkInterface> interfaces =
-                NetworkInterface.getNetworkInterfaces();
-
-        while (interfaces.hasMoreElements()) {
-            NetworkInterface networkInterface =
-                    interfaces.nextElement();
-
-            if (!networkInterface.isUp()
-                    || networkInterface.isLoopback()) {
-                continue;
-            }
-
-            Enumeration<InetAddress> addresses =
-                    networkInterface.getInetAddresses();
-
-            while (addresses.hasMoreElements()) {
-                InetAddress address = addresses.nextElement();
-
-                if (address instanceof Inet4Address
-                        && !address.isLoopbackAddress()) {
-                    return address.getHostAddress();
-                }
-            }
-        }
-
-        return null;
-    }
-}
+        } catch (Exception
