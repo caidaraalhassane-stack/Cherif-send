@@ -1,17 +1,17 @@
 name: Build Cherif Send APK
 
 on:
-  workflow_dispatch:
   push:
     branches:
-      - main
+      - transfert-local
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Télécharger le projet
+      - name: Récupérer le projet
         uses: actions/checkout@v4
 
       - name: Installer Java 21
@@ -20,19 +20,15 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Préparer Capacitor Android
-        run: |
-          npm ci
-          npx cap sync android
+      - name: Donner les permissions à Gradle
+        run: chmod +x android/gradlew
 
-      - name: Compiler Cherif Send
+      - name: Compiler APK Debug
         working-directory: android
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug
+        run: ./gradlew assembleDebug
 
       - name: Publier l'APK
         uses: actions/upload-artifact@v4
         with:
-          name: Cherif-Send-APK
-          path: android/app/build/outputs/apk/debug/*.apk
+          name: Cherif-Send-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
