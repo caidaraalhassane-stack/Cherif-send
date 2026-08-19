@@ -6,7 +6,7 @@
   <title>Cherif Send</title>
 
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <style>
@@ -456,7 +456,38 @@
   <button onclick="showSection('receive')">📥<br>Recevoir</button>
   <button onclick="showSection('history')">📋<br>Historique</button>
 </nav>
+const Network = window.Capacitor
+  ? window.Capacitor.Plugins.Network
+  : null;
 
+async function updateNetworkStatus() {
+  if (!Network) return;
+
+  const status = await Network.getStatus();
+  const element = document.getElementById("networkStatus");
+
+  if (!element) return;
+
+  element.textContent = status.connected
+    ? "🟢 Réseau connecté"
+    : "🔴 Hors connexion";
+}
+
+async function watchNetwork() {
+  if (!Network) return;
+
+  Network.addListener("networkStatusChange", status => {
+    const element = document.getElementById("networkStatus");
+
+    if (!element) return;
+
+    element.textContent = status.connected
+      ? "🟢 Réseau connecté"
+      : "🔴 Hors connexion";
+  });
+
+  await updateNetworkStatus();
+}
 <script>
 
 let peer = null;
@@ -545,6 +576,7 @@ function renderHistory() {
   if (!history.length) {
 
     list.innerHTML =
+<p id="networkStatus">🔄 Vérification du réseau...</p>
       '<div class="empty">📭<br><br>Aucun transfert pour le moment.</div>';
 
     return;
@@ -896,7 +928,7 @@ function showFiles() {
 
 renderHistory();
 
-</script>
+watchNetwork(); </script>
 
 </body>
 </html>EOF
