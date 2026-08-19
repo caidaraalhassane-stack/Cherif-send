@@ -1,3 +1,4 @@
+ 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -489,20 +490,6 @@ async function watchNetwork() {
   await updateNetworkStatus();
 }
 
-async function testLocalTransfer() {
-  if (!LocalTransfer) {
-    alert("❌ LocalTransfer n'est pas disponible");
-    return;
-  }
-
-  try {
-    const address = await LocalTransfer.getLocalAddress();
-    alert("📡 Adresse locale : " + address.address);
-  } catch (error) {
-    alert("❌ " + error);
-  }
-}
-
 let peer = null;
 let connection = null;
 let selectedFile = null;
@@ -671,7 +658,7 @@ function startSender() {
 
     new QRCode(
       document.getElementById("qrcode"),
-      {
+}
         text: id,
         width: 220,
         height: 220
@@ -784,10 +771,10 @@ function startScanner() {
     new Html5Qrcode("reader");
 
   scanner.start(
-    {
+}
       facingMode: "environment"
     },
-    {
+}
       fps: 10,
       qrbox: 250
     },
@@ -863,7 +850,7 @@ function receiveData(data) {
     const blob =
       new Blob(
         receivedChunks,
-        {
+}
           type: receivedInfo.mime
         }
       );
@@ -939,7 +926,6 @@ function showFiles() {
 }
 
 renderHistory();
-testLocalTransfer();
 watchNetwork(); </script>
 
 </body>
