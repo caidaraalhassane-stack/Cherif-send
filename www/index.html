@@ -771,17 +771,16 @@ function startScanner() {
     new Html5Qrcode("reader");
 
   scanner.start(
-}
-      facingMode: "environment"
+    {
+     facingMode: "environment"
     },
-}
+    {
       fps: 10,
       qrbox: 250
     },
     code => {
 
       scanner.stop();
-
       document.getElementById("receiveStatus")
         .textContent =
         "📡 Connexion...";
