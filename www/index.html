@@ -460,7 +460,8 @@
 const Network = window.Capacitor
   ? window.Capacitor.Plugins.Network
   : null;
-
+const LocalTransfer =
+  window.Capacitor?.Plugins?.LocalTransfer || null;
 async function updateNetworkStatus() {
   if (!Network) return;
 
@@ -472,8 +473,6 @@ async function updateNetworkStatus() {
   element.textContent = status.connected
     ? "🟢 Réseau connecté"
     : "🔴 Hors connexion";
-}
-
 async function watchNetwork() {
   if (!Network) return;
 
@@ -488,6 +487,20 @@ async function watchNetwork() {
   });
 
   await updateNetworkStatus();
+}
+
+async function testLocalTransfer() {
+  if (!LocalTransfer) {
+    alert("❌ LocalTransfer n'est pas disponible");
+    return;
+  }
+
+  try {
+    const address = await LocalTransfer.getLocalAddress();
+    alert("📡 Adresse locale : " + address.address);
+  } catch (error) {
+    alert("❌ " + error);
+  }
 }
 
 let peer = null;
@@ -926,7 +939,7 @@ function showFiles() {
 }
 
 renderHistory();
-
+testLocalTransfer();
 watchNetwork(); </script>
 
 </body>

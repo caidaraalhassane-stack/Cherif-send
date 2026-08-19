@@ -22,7 +22,60 @@ public class LocalTransferPlugin extends Plugin {
 
     private ServerSocket serverSocket;
     private Thread serverThread;
+@PluginMethod
+public void sendFile(PluginCall call) {
+    String host = call.getString("host");
+    int port = call.getInt("port", -1);
+    String filePath = call.getString("filePath");
+    String fileName = call.getString("fileName");
 
+    if (host == null || port <= 0 || filePath == null) {
+        call.reject("Paramètres d'envoi invalides.");
+        return;
+    }
+
+    new Thread(() -> {
+        try {
+            File file = new File(filePath);
+
+            if (!file.exists()) {
+                call.reject("Fichier introuvable.");
+                return;
+            }
+
+            Socket socket = new Socket(host, port);
+
+            java.io.OutputStream output = socket.getOutputStream();
+
+            String header =
+                    "CHERIF-SEND\n" +
+                    fileName + "\n" +
+                    file.length() + "\n";
+
+            output.write(header.getBytes("UTF-8"));
+            output.flush();
+
+            java.io.FileInputStream input =
+                    new java.io.FileInputStream(file);
+
+            byte[] buffer = new byte[8192];
+            int count;
+
+            while ((count = input.read(buffer)) != -1) {
+                output.write(buffer, 0, count);
+            }
+
+            output.flush();
+            input.close();
+            socket.close();
+
+            call.resolve();
+
+        } catch (Exception e) {
+            call.reject("Échec de l'envoi local.", e);
+        }
+    }).start();
+}
     @PluginMethod
     public void getLocalAddress(PluginCall call) {
         try {
