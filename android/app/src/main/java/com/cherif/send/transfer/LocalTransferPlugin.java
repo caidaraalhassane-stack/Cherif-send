@@ -1,6 +1,6 @@
 package com.cherif.send.transfer;
 
-import com.getcapacitor.JSObject;
+import com.ccgetcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
