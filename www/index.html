@@ -390,6 +390,10 @@
       📷 Scanner le QR
     </button>
 
+    <button onclick="testLocalReceiver()">
+      📡 Recevoir en local
+    </button>
+
     <div id="receiverBox" class="hidden">
 
       <div id="reader"></div>
@@ -460,6 +464,12 @@
 const Network = window.Capacitor
   ? window.Capacitor.Plugins.Network
   : null;
+
+const LocalTransfer =
+  window.Capacitor?.Plugins?.LocalTransfer || null;
+
+const Filesystem =
+  window.Capacitor?.Plugins?.Filesystem || null;
 
 async function updateNetworkStatus() {
   if (!Network) return;
@@ -628,6 +638,53 @@ function escapeHtml(text) {
     .replaceAll("'", "&#039;");
 }
 
+
+async function prepareLocalFile(file) {
+  if (!Filesystem) {
+    throw new Error("Filesystem n'est pas disponible.");
+  }
+
+  const data = await file.arrayBuffer();
+  const bytes = new Uint8Array(data);
+  let binary = "";
+
+  for (let i = 0; i < bytes.length; i += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  }
+
+  const base64 = btoa(binary);
+
+  const result = await Filesystem.writeFile({
+    path: "cherif-send/" + file.name,
+    data: base64,
+    directory: "CACHE"
+  });
+
+  return result.uri;
+}
+
+
+async function sendLocalFile(host, port) {
+  if (!LocalTransfer) {
+    throw new Error("LocalTransfer n'est pas disponible.");
+  }
+
+  const file = document.getElementById("file").files[0];
+
+  if (!file) {
+    throw new Error("Choisis d'abord un fichier.");
+  }
+
+  const filePath = await prepareLocalFile(file);
+
+  await LocalTransfer.sendFile({
+    host: host,
+    port: port,
+    filePath: filePath,
+    fileName: file.name
+  });
+}
+
 function startSender() {
 
   selectedFile =
@@ -759,6 +816,37 @@ function sendFile() {
   }
 
   sendChunk();
+}
+
+
+async function startLocalReceiver() {
+  if (!LocalTransfer) {
+    throw new Error("LocalTransfer n'est pas disponible.");
+  }
+
+  const result = await LocalTransfer.startReceiver();
+  const address = await LocalTransfer.getLocalAddress();
+
+  return {
+    address: address.address,
+    port: result.port
+  };
+}
+
+
+async function testLocalReceiver() {
+  try {
+    const info = await startLocalReceiver();
+
+    alert(
+      "📡 Cherif Send local\n" +
+      "Adresse : " + info.address + "\n" +
+      "Port : " + info.port
+    );
+
+  } catch (error) {
+    alert("❌ " + error.message);
+  }
 }
 
 function startScanner() {

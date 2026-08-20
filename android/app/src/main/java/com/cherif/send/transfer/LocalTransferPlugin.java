@@ -130,20 +130,22 @@ public void sendFile(PluginCall call) {
     }
 
     private void handleClient(Socket socket) {
-        FileOutputStream output = null;
-
         try {
             BufferedInputStream input =
                     new BufferedInputStream(socket.getInputStream());
 
-            byte[] buffer = new byte[8192];
+            String magic = readHeader(input);
+            String fileName = readHeader(input);
+            String sizeText = readHeader(input);
 
-            String header = readHeader(input);
-
-            if (header == null || !header.startsWith("CHERIF-SEND")) {
+            if (!"CHERIF-SEND".equals(magic)
+                    || fileName == null
+                    || sizeText == null) {
                 socket.close();
                 return;
             }
+
+            long fileSize = Long.parseLong(sizeText);
 
             File directory =
                     getContext().getExternalFilesDir(null);
@@ -153,14 +155,22 @@ public void sendFile(PluginCall call) {
                 return;
             }
 
-            File file = new File(directory, "received_file");
+            File file = new File(directory, fileName);
+            FileOutputStream output = new FileOutputStream(file);
 
-            output = new FileOutputStream(file);
+            byte[] buffer = new byte[8192];
+            long remaining = fileSize;
 
-            int count;
+            while (remaining > 0) {
+                int wanted = (int) Math.min(buffer.length, remaining);
+                int count = input.read(buffer, 0, wanted);
 
-            while ((count = input.read(buffer)) != -1) {
+                if (count == -1) {
+                    break;
+                }
+
                 output.write(buffer, 0, count);
+                remaining -= count;
             }
 
             output.flush();
@@ -169,9 +179,7 @@ public void sendFile(PluginCall call) {
 
         } catch (Exception ignored) {
             try {
-                if (output != null) {
-                    output.close();
-                }
+                socket.close();
             } catch (Exception ignoredAgain) {
             }
         }
@@ -181,22 +189,23 @@ public void sendFile(PluginCall call) {
             throws IOException {
 
         StringBuilder header = new StringBuilder();
-
         int value;
 
         while ((value = input.read()) != -1) {
             if (value == '\n') {
-                break;
+                return header.toString();
             }
 
-            header.append((char) value);
+            if (value != '\r') {
+                header.append((char) value);
+            }
 
-            if (header.length() > 256) {
-                break;
+            if (header.length() > 4096) {
+                return null;
             }
         }
 
-        return header.toString();
+        return header.length() == 0 ? null : header.toString();
     }
 
     @PluginMethod
