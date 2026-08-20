@@ -138,25 +138,66 @@ public void sendFile(PluginCall call) {
             String fileName = readHeader(input);
             String sizeText = readHeader(input);
 
-            if (!"CHERIF-SEND".equals(magic)
-                    || fileName == null
-                    || sizeText == null) {
+            if (magic == null || !magic.startsWith("CHERIF-SEND")) {
                 socket.close();
                 return;
             }
 
-            long fileSize = Long.parseLong(sizeText);
-
-            File directory =
-                    getContext().getExternalFilesDir(null);
-
-            if (directory == null) {
+            long fileSize;
+            try {
+                fileSize = Long.parseLong(sizeText);
+            } catch (Exception e) {
                 socket.close();
                 return;
             }
 
-            File file = new File(directory, fileName);
-            FileOutputStream output = new FileOutputStream(file);
+            if (fileName == null || fileName.trim().isEmpty()) {
+                fileName = "received_file";
+            }
+
+            fileName = new File(fileName).getName();
+
+            android.content.ContentValues values =
+                    new android.content.ContentValues();
+
+            values.put(
+                    android.provider.MediaStore.Downloads.DISPLAY_NAME,
+                    fileName
+            );
+
+            values.put(
+                    android.provider.MediaStore.Downloads.MIME_TYPE,
+                    "application/octet-stream"
+            );
+
+            values.put(
+                    android.provider.MediaStore.Downloads.RELATIVE_PATH,
+                    android.os.Environment.DIRECTORY_DOWNLOADS
+            );
+
+            values.put(
+                    android.provider.MediaStore.Downloads.IS_PENDING,
+                    1
+            );
+
+            android.net.Uri uri =
+                    getContext().getContentResolver().insert(
+                            android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                            values
+                    );
+
+            if (uri == null) {
+                socket.close();
+                return;
+            }
+
+            java.io.OutputStream output =
+                    getContext().getContentResolver().openOutputStream(uri);
+
+            if (output == null) {
+                socket.close();
+                return;
+            }
 
             byte[] buffer = new byte[8192];
             long remaining = fileSize;
@@ -176,6 +217,36 @@ public void sendFile(PluginCall call) {
             output.flush();
             output.close();
             socket.close();
+
+            values.clear();
+            values.put(
+                    android.provider.MediaStore.Downloads.IS_PENDING,
+                    0
+            );
+
+            getContext().getContentResolver().update(
+                    uri,
+                    values,
+                    null,
+                    null
+            );
+
+            android.content.Intent intent =
+                    new android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            uri
+                    );
+
+            intent.addFlags(
+                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+            );
+
+            getActivity().runOnUiThread(() -> {
+                try {
+                    getActivity().startActivity(intent);
+                } catch (Exception ignored) {
+                }
+            });
 
         } catch (Exception ignored) {
             try {
