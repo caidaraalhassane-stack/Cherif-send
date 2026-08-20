@@ -1,10 +1,10 @@
-name: Build Cherif Send APK
+name: Build Cherif Send
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - transfert-local
-  workflow_dispatch:
 
 jobs:
   build:
@@ -13,6 +13,12 @@ jobs:
     steps:
       - name: Récupérer le projet
         uses: actions/checkout@v4
+
+      - name: Installer Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
 
       - name: Installer Node.js
         uses: actions/setup-node@v4
@@ -23,24 +29,16 @@ jobs:
       - name: Installer les dépendances
         run: npm ci
 
-      - name: Installer Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Synchroniser Capacitor Android
+      - name: Synchroniser Capacitor
         run: npx cap sync android
-
-      - name: Donner les permissions à Gradle
-        run: chmod +x android/gradlew
 
       - name: Compiler APK Debug
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --no-daemon
 
-      - name: Publier l'APK
+      - name: Publier APK
         uses: actions/upload-artifact@v4
         with:
           name: Cherif-Send-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
