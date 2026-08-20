@@ -36,27 +36,51 @@ public void sendFile(PluginCall call) {
 
     new Thread(() -> {
         try {
-            File file = new File(filePath);
+            android.net.Uri uri = android.net.Uri.parse(filePath);
 
-            if (!file.exists()) {
-                call.reject("Fichier introuvable.");
+            java.io.InputStream input;
+
+            if ("content".equalsIgnoreCase(uri.getScheme())) {
+                input = getContext().getContentResolver()
+                        .openInputStream(uri);
+            } else {
+                String path = uri.getPath();
+
+                if (path == null) {
+                    path = filePath.replace("file://", "");
+                }
+
+                input = new java.io.FileInputStream(path);
+            }
+
+            if (input == null) {
+                call.reject("Impossible de lire le fichier.");
                 return;
             }
 
             Socket socket = new Socket(host, port);
-
             java.io.OutputStream output = socket.getOutputStream();
+
+            long fileSize = 0;
+            try {
+                android.content.res.AssetFileDescriptor afd =
+                        getContext().getContentResolver()
+                                .openAssetFileDescriptor(uri, "r");
+
+                if (afd != null) {
+                    fileSize = afd.getLength();
+                    afd.close();
+                }
+            } catch (Exception ignored) {
+            }
 
             String header =
                     "CHERIF-SEND\n" +
                     fileName + "\n" +
-                    file.length() + "\n";
+                    fileSize + "\n";
 
             output.write(header.getBytes("UTF-8"));
             output.flush();
-
-            java.io.FileInputStream input =
-                    new java.io.FileInputStream(file);
 
             byte[] buffer = new byte[8192];
             int count;
