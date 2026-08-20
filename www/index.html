@@ -349,6 +349,10 @@
       🚀 Créer le QR de transfert
     </button>
 
+    <button onclick="showLocalSend()">
+      📡 Envoyer en local
+    </button>
+
     <div id="senderBox" class="hidden">
 
       <h3 style="text-align:center">
@@ -683,6 +687,35 @@ async function sendLocalFile(host, port) {
     filePath: filePath,
     fileName: file.name
   });
+}
+
+
+async function showLocalSend() {
+  const host = prompt("Adresse IP du téléphone qui reçoit :");
+
+  if (!host) return;
+
+  const portText = prompt("Port du téléphone qui reçoit :");
+  const port = Number(portText);
+
+  if (!Number.isInteger(port) || port <= 0) {
+    alert("Port invalide.");
+    return;
+  }
+
+  try {
+    document.getElementById("sendStatus").textContent =
+      "📡 Envoi local en cours...";
+
+    await sendLocalFile(host, port);
+
+    document.getElementById("sendStatus").textContent =
+      "✅ Fichier envoyé localement !";
+
+  } catch (error) {
+    document.getElementById("sendStatus").textContent =
+      "❌ " + error.message;
+  }
 }
 
 function startSender() {
